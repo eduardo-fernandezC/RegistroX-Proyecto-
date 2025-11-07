@@ -1,17 +1,13 @@
 package com.example.registrox_proyecto.ui.screens
 
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.registrox_proyecto.scannerqr.ScannerActivity
+import com.example.registrox_proyecto.data.scannerqr.ScannerActivity
 import com.example.registrox_proyecto.ui.viewmodel.CarritoViewModel
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions

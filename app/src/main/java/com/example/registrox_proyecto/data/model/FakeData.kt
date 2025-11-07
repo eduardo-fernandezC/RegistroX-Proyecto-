@@ -5,5 +5,6 @@ val entradasDisponibles = listOf(
     Entrada("2","Concierto 2","Plaza Oeste",10000.0),
     Entrada("3","Concierto 3","Plaza Oeste",10000.0),
     Entrada("4","Concierto 4","Plaza Oeste",10000.0),
-    Entrada("5","Concierto 5","Plaza Oeste",10000.0)
+    Entrada("5","Concierto 5","Plaza Oeste",10000.0),
+    Entrada("6","Papu Concert","Papu Zone",70000.0)
 )

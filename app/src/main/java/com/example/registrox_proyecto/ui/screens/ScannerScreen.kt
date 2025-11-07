@@ -7,12 +7,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.registrox_proyecto.scannerqr.ScannerActivity
+import com.example.registrox_proyecto.data.scannerqr.ScannerActivity
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)

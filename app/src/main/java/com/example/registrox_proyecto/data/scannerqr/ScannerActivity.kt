@@ -1,4 +1,4 @@
-package com.example.registrox_proyecto.scannerqr
+package com.example.registrox_proyecto.data.scannerqr
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle
