@@ -1,12 +1,15 @@
 package com.example.registrox_proyecto.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.registrox_proyecto.data.datastore.AuthDataStore
 import com.example.registrox_proyecto.data.model.LoginFormState
 import com.example.registrox_proyecto.data.model.Role
 import com.example.registrox_proyecto.data.model.User
 import com.example.registrox_proyecto.data.repository.AuthRepository
+import com.example.registrox_proyecto.utils.NetworkUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,9 +18,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
+    application: Application,
     private val authRepository: AuthRepository,
     private val authDataStore: AuthDataStore
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _formState = MutableStateFlow(LoginFormState())
     val formState: StateFlow<LoginFormState> = _formState
@@ -32,10 +36,13 @@ class LoginViewModel(
         viewModelScope.launch {
             val savedEmail = authDataStore.email.first() ?: ""
             val savedRole = authDataStore.role.first() ?: ""
-
             if (savedEmail.isNotBlank() && savedRole.isNotBlank()) {
                 val roleEnum = if (savedRole == "TRABAJADOR") Role.TRABAJADOR else Role.USUARIO
-                _user.value = User(savedEmail, roleEnum)
+                _user.value = User(
+                    id = 0L,
+                    email = savedEmail,
+                    role = roleEnum
+                )
             }
         }
     }
@@ -72,12 +79,7 @@ class LoginViewModel(
     }
 
     private fun validatePassword(password: String): String? {
-        val regex = Regex("^(?=.*[A-Z])(?=.*\\d).{6,}$")
-        return when {
-            password.isBlank() -> "La contraseña no puede estar vacía"
-            !regex.matches(password) -> "Debe tener al menos 6 caracteres, una mayúscula y un número"
-            else -> null
-        }
+        return if (password.isBlank()) "La contraseña no puede estar vacía" else null
     }
 
     private fun validateForm(state: LoginFormState): Boolean {
@@ -95,17 +97,44 @@ class LoginViewModel(
             }
 
             _isLoading.value = true
-            delay(2000)
+            delay(800)
 
-            val result = authRepository.login(_formState.value.email, _formState.value.password)
+            try {
+                val context = getApplication<Application>().applicationContext
+                if (!NetworkUtils.isNetworkAvailable(context)) {
+                    _formState.update { it.copy(loginError = "Sin conexión a internet") }
+                    _isLoading.value = false
+                    return@launch
+                }
 
-            if (result != null) {
-                _user.value = result
-                _formState.update { it.copy(loginError = "") }
+                val email = _formState.value.email.trim()
+                val password = _formState.value.password
 
-                authDataStore.saveUser(result.email, result.role.name)
-            } else {
-                _formState.update { it.copy(loginError = "Correo o contraseña inválidos") }
+                val usuarioAPI = authRepository.login(email, password)
+
+                if (usuarioAPI != null) {
+                    val roleEnum = when {
+                        usuarioAPI.email.endsWith("@registrox.cl", ignoreCase = true) -> Role.TRABAJADOR
+                        usuarioAPI.rol.id?.toInt() == 1 -> Role.TRABAJADOR
+                        else -> Role.USUARIO
+                    }
+
+                    _user.value = User(
+                        id = usuarioAPI.id ?: 0L,
+                        email = usuarioAPI.email,
+                        role = roleEnum
+                    )
+                    _formState.update { it.copy(loginError = "") }
+                    authDataStore.saveUser(usuarioAPI.email, roleEnum.name)
+
+                    Log.d("LOGIN", "Usuario logueado: ${usuarioAPI.email}, Rol: $roleEnum")
+                } else {
+                    _formState.update { it.copy(loginError = "Correo no encontrado o incorrecto") }
+                }
+
+            } catch (e: Exception) {
+                _formState.update { it.copy(loginError = "Error de conexión: ${e.localizedMessage}") }
+                Log.e("LOGIN_ERROR", "Error en login: ${e.localizedMessage}")
             }
 
             _isLoading.value = false
@@ -120,5 +149,4 @@ class LoginViewModel(
             _formState.value = LoginFormState()
         }
     }
-
 }

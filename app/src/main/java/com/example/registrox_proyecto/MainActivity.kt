@@ -37,35 +37,59 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             RegistroXProyectoTheme {
-                QRApp()
+                RegistroXApp()
             }
         }
     }
 }
 
 @Composable
-fun QRApp() {
+fun RegistroXApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val app = context.applicationContext as android.app.Application
 
     val authRepository = remember { AuthRepository() }
     val authDataStore = remember { AuthDataStore(context) }
     val entradasDataStore = remember { EntradasDataStore(context) }
 
-    val loginViewModel = remember { LoginViewModel(authRepository, authDataStore) }
-    val registerViewModel = remember { RegisterViewModel(authRepository) }
-
-    val carritoViewModel = remember { CarritoViewModel(entradasDataStore, authDataStore) }
-
-    val profileViewModel: ProfileViewModel = viewModel(
+    val loginViewModel: LoginViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
-                ProfileViewModel(context.applicationContext as android.app.Application)
+                LoginViewModel(app, authRepository, authDataStore)
             }
         }
     )
 
+    val registerViewModel: RegisterViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                RegisterViewModel(app, authRepository)
+            }
+        }
+    )
+
+    val carritoViewModel: CarritoViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                CarritoViewModel(app, entradasDataStore, authDataStore)
+            }
+        }
+    )
+
+    val profileViewModel: ProfileViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                ProfileViewModel(app)
+            }
+        }
+    )
+
+    val entradasApiViewModel = remember { EntradasApiViewModel() }
+    val comprasViewModel = remember { ComprasViewModel() }
+
     val user by loginViewModel.user.collectAsStateWithLifecycle()
+
     LaunchedEffect(user) {
         carritoViewModel.actualizarUsuario()
     }
@@ -115,6 +139,8 @@ fun QRApp() {
             loginViewModel = loginViewModel,
             registerViewModel = registerViewModel,
             profileViewModel = profileViewModel,
+            entradasApiViewModel = entradasApiViewModel,
+            comprasViewModel = comprasViewModel,
             modifier = Modifier.padding(padding)
         )
     }
@@ -127,6 +153,8 @@ fun NavGraph(
     loginViewModel: LoginViewModel,
     registerViewModel: RegisterViewModel,
     profileViewModel: ProfileViewModel,
+    entradasApiViewModel: EntradasApiViewModel,
+    comprasViewModel: ComprasViewModel,
     modifier: Modifier = Modifier
 ) {
     val user by loginViewModel.user.collectAsStateWithLifecycle()
@@ -174,6 +202,9 @@ fun NavGraph(
         composable("${Routes.DETALLE}/{codigoQR}") { backStackEntry ->
             val codigoQR = backStackEntry.arguments?.getString("codigoQR") ?: ""
             DetalleEntradaScreen(navController = navController, codigoQR = codigoQR)
+        }
+        composable(Routes.COMPRAS) {
+            ComprasScreen(navController = navController, viewModel = comprasViewModel)
         }
     }
 }

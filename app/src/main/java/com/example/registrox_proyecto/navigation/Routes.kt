@@ -8,4 +8,6 @@ object Routes {
     const val PROFILE = "profile"
     const val DETALLE = "detalle/{entradaId}"
     const val TRABAJADOR = "trabajador"
+    const val COMPRAS = "compras"
+
 }

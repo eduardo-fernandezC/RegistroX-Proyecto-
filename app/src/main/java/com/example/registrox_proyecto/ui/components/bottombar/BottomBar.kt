@@ -13,7 +13,7 @@ import com.example.registrox_proyecto.navigation.Routes
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun BottomBar(
@@ -24,25 +24,46 @@ fun BottomBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar (containerColor = MaterialTheme.colorScheme.primary){
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.primary
+    ) {
         items.forEach { item ->
-            if (item.route == Routes.TRABAJADOR && userRole != Role.TRABAJADOR){
+
+            if (item.route == Routes.TRABAJADOR && userRole != Role.TRABAJADOR) {
                 return@forEach
             }
 
             NavigationBarItem(
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = {Text(item.label)},
+                icon = {
+                    Icon(
+                        item.icon,
+                        contentDescription = item.label,
+                        tint = Color.White
+                    )
+                },
+                label = {
+                    Text(
+                        item.label,
+                        color = Color.White
+                    )
+                },
                 selected = currentRoute == item.route,
                 onClick = {
-                    if(currentRoute != item.route){
-                        navController.navigate(item.route){
-                            popUpTo(Routes.HOME){saveState = true}
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route) {
+                            popUpTo(Routes.HOME) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
                     }
-                }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    unselectedIconColor = Color.White,
+                    selectedTextColor = Color.White,
+                    unselectedTextColor = Color.White,
+                    indicatorColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
     }

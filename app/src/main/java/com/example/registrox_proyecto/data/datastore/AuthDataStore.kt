@@ -31,11 +31,4 @@ class AuthDataStore(private val context: Context) {
         }
     }
 
-    suspend fun clearUser() {
-        context.authDataStore.edit { prefs ->
-            prefs.remove(EMAIL_KEY)
-            prefs.remove(ROLE_KEY)
-        }
-    }
-
 }

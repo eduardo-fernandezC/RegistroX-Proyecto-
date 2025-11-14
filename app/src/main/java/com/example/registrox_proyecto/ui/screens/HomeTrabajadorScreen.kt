@@ -6,9 +6,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.registrox_proyecto.data.scannerqr.ScannerActivity
 import com.example.registrox_proyecto.ui.viewmodel.CarritoViewModel
+import com.example.registrox_proyecto.utils.NetworkUtils
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 
@@ -18,28 +20,23 @@ fun HomeTrabajadorScreen(
     carritoViewModel: CarritoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     var codigoEscaneado by remember { mutableStateOf("") }
-    var resultado by remember { mutableStateOf<String?>(null) }
+    val mensajeOperacion = carritoViewModel.mensajeOperacion.value
+    val context = LocalContext.current
 
     val qrLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
             codigoEscaneado = result.contents
-
-            val resultadoOk = carritoViewModel.marcarComoUsadaPorCodigo(codigoEscaneado)
-
-
-            resultado = if (resultadoOk) {
-                " Entrada $codigoEscaneado marcada como caducada"
+            if (NetworkUtils.isNetworkAvailable(context)) {
+                carritoViewModel.marcarEntradaUsadaRemota(codigoEscaneado)
             } else {
-                "No se encontro ninguna entrada con el codigo $codigoEscaneado"
+                carritoViewModel.mensajeOperacion.value = "Sin conexión a internet"
             }
         } else {
-            resultado = " No se detecto ningun codigo"
+            carritoViewModel.mensajeOperacion.value = "No se detectó ningún código"
         }
     }
 
-
-    Scaffold(
-    ) { padding ->
+    Scaffold { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -49,7 +46,7 @@ fun HomeTrabajadorScreen(
             OutlinedTextField(
                 value = codigoEscaneado,
                 onValueChange = { codigoEscaneado = it },
-                label = { Text("Ingrese codigo QR o ID") },
+                label = { Text("Ingrese código QR o ID") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -74,15 +71,13 @@ fun HomeTrabajadorScreen(
             Button(
                 onClick = {
                     if (codigoEscaneado.isNotEmpty()) {
-                        val resultadoOk = carritoViewModel.marcarComoUsadaPorCodigo(codigoEscaneado)
-
-                        resultado = if (resultadoOk) {
-                            "Entrada $codigoEscaneado marcada como caducada"
+                        if (NetworkUtils.isNetworkAvailable(context)) {
+                            carritoViewModel.marcarEntradaUsadaRemota(codigoEscaneado)
                         } else {
-                            "No se encontro ninguna entrada con el código $codigoEscaneado"
+                            carritoViewModel.mensajeOperacion.value = "Sin conexión a internet"
                         }
                     } else {
-                        resultado = "Debe ingresar o escanear un codigo"
+                        carritoViewModel.mensajeOperacion.value = "Debe ingresar o escanear un código"
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
@@ -90,12 +85,17 @@ fun HomeTrabajadorScreen(
                 Text("Validar Manual")
             }
 
-
             Spacer(Modifier.height(24.dp))
 
-            resultado?.let {
-                Text(it, style = MaterialTheme.typography.titleMedium)
-            }
+            Text(
+                text = mensajeOperacion,
+                style = MaterialTheme.typography.titleMedium,
+                color = if (mensajeOperacion.contains("correctamente", true))
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
     }
 }

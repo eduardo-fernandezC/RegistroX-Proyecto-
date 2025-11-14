@@ -6,19 +6,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.registrox_proyecto.data.model.Entrada
+import com.example.registrox_proyecto.data.model.CompraEntrada
 import com.example.registrox_proyecto.navigation.Routes
 import com.example.registrox_proyecto.ui.viewmodel.CarritoViewModel
+import com.example.registrox_proyecto.utils.NetworkUtils
 import com.example.registrox_proyecto.utils.QRCodeGenerator
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,38 +28,78 @@ fun EntradasScreen(
     navController: NavController,
     carritoViewModel: CarritoViewModel
 ) {
-    val entradas = carritoViewModel.entradasCompradas
+    val coroutineScope = rememberCoroutineScope()
+    val tickets = carritoViewModel.ticketsUsuario
+    val mensaje = carritoViewModel.mensajeOperacion.value
+    val isLoading by carritoViewModel.isLoading
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            if (NetworkUtils.isNetworkAvailable(context)) {
+                carritoViewModel.actualizarUsuario()
+            } else {
+                carritoViewModel.mensajeOperacion.value = "Sin conexión a internet"
+            }
+        }
+    }
 
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Mis Entradas") })
-        }
+        topBar = { TopAppBar(title = { Text("Mis Entradas") }) }
     ) { padding ->
-        if (entradas.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No tienes entradas compradas")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+        ) {
+            if (mensaje.contains("Error", true)) {
+                Text(
+                    text = mensaje,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp)
-            ) {
-                items(entradas) { entrada ->
-                    EntradaCompradaCard(
-                        entrada = entrada,
-                        onClick = {
-                            entrada.codigoQR?.let { codigo ->
-                                navController.navigate("${Routes.DETALLE}/$codigo")
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (tickets.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No tienes entradas compradas")
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 8.dp)
+                ) {
+                    items(tickets) { ticket ->
+                        TicketCard(
+                            ticket = ticket,
+                            onClick = {
+                                ticket.codigoQR?.let { codigo ->
+                                    navController.navigate("${Routes.DETALLE}/$codigo")
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { carritoViewModel.eliminarOcupadas() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Eliminar entradas usadas")
                 }
             }
         }
@@ -65,26 +107,23 @@ fun EntradasScreen(
 }
 
 @Composable
-fun EntradaCompradaCard(
-    entrada: Entrada,
+fun TicketCard(
+    ticket: CompraEntrada,
     onClick: () -> Unit
 ) {
-    val colorEstado = when (entrada.estado.lowercase()) {
+    val colorEstado = when (ticket.estado.lowercase()) {
         "ocupada" -> Color.Red
         "caducada" -> Color.Gray
         else -> Color(0xFF4CAF50)
     }
-
-    val textoEstado = when (entrada.estado.lowercase()) {
+    val textoEstado = when (ticket.estado.lowercase()) {
         "ocupada" -> "Ocupada"
         "caducada" -> "Caducada"
         else -> "Disponible para escaneo"
     }
-
-    val qrBitmap = remember(entrada.codigoQR) {
-        entrada.codigoQR?.let { QRCodeGenerator.generateQRCode(it, 450) }
+    val qrBitmap = remember(ticket.codigoQR) {
+        ticket.codigoQR?.let { QRCodeGenerator.generateQRCode(it, 450) }
     }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -98,25 +137,27 @@ fun EntradaCompradaCard(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(entrada.titulo, style = MaterialTheme.typography.titleLarge)
-            Text(entrada.lugar, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = ticket.entrada?.titulo ?: "Evento desconocido",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Text(
+                text = ticket.entrada?.lugar ?: "Lugar no disponible",
+                style = MaterialTheme.typography.bodyMedium
+            )
             Spacer(modifier = Modifier.height(8.dp))
-
             qrBitmap?.let {
                 Image(
                     bitmap = it.asImageBitmap(),
-                    contentDescription = "Codigo QR de la entrada",
+                    contentDescription = "Código QR del ticket",
                     modifier = Modifier
                         .size(220.dp)
                         .padding(8.dp)
                 )
             }
-
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Codigo: ${entrada.codigoQR ?: "No disponible"}")
-            Text("Comprado por: ${entrada.usuarioEmail}", color = Color.DarkGray)
+            Text("Código: ${ticket.codigoQR ?: "No disponible"}")
             Spacer(modifier = Modifier.height(8.dp))
-
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -126,7 +167,10 @@ fun EntradaCompradaCard(
                     color = colorEstado,
                     fontWeight = FontWeight.Bold
                 )
-                Text("Precio: ${entrada.precio} $")
+                Text(
+                    "Precio: ${ticket.entrada?.precio ?: 0.0} $",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }

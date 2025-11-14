@@ -1,16 +1,15 @@
 package com.example.registrox_proyecto.data.repository
 
-import com.example.registrox_proyecto.data.model.Entrada
-import com.example.registrox_proyecto.data.model.entradasDisponibles
+import com.example.registrox_proyecto.data.remote.RetrofitInstance
+import retrofit2.Response
 
 class EntradasRepository {
+    private val api = RetrofitInstance.apiEntradas
 
-    fun obtenerTodas(): List<Entrada> = entradasDisponibles
+    suspend fun obtenerEntradas() = api.getEntradas()
 
-    fun buscarPorTitulo(query: String): List<Entrada> {
-        if (query.isBlank()) return entradasDisponibles
-        return entradasDisponibles.filter {
-            it.titulo.contains(query, ignoreCase = true)
-        }
+    suspend fun marcarEntradaUsada(codigoQR: String): Response<Map<String, String>> {
+        return RetrofitInstance.apiEntradas.marcarEntradaUsada(codigoQR)
     }
+
 }
