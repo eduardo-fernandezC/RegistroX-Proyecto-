@@ -20,7 +20,7 @@ fun BottomBar(
     navController: NavHostController,
     items: List<BottomNavItem>,
     userRole: Role? = null
-){
+) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -36,16 +36,12 @@ fun BottomBar(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        item.icon,
-                        contentDescription = item.label,
-                        tint = Color.White
+                        imageVector = item.icon,
+                        contentDescription = item.label
                     )
                 },
                 label = {
-                    Text(
-                        item.label,
-                        color = Color.White
-                    )
+                    Text(item.label)
                 },
                 selected = currentRoute == item.route,
                 onClick = {
@@ -58,11 +54,13 @@ fun BottomBar(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimary,
                     unselectedIconColor = Color.White,
-                    selectedTextColor = Color.White,
+
+                    selectedTextColor = MaterialTheme.colorScheme.onPrimary,
                     unselectedTextColor = Color.White,
-                    indicatorColor = MaterialTheme.colorScheme.primary
+
+                    indicatorColor = MaterialTheme.colorScheme.secondary
                 )
             )
         }
