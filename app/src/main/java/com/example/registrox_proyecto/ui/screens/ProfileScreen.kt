@@ -99,7 +99,7 @@ fun ProfileScreen(
             },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
-            Text("Cerrar sesión")
+            Text("Cerrar sesion")
         }
     }
 }

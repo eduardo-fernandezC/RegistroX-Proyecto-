@@ -45,7 +45,6 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
         ) {
             Text("Bienvenido a RegistroX", style = MaterialTheme.typography.headlineSmall)
 
-            // Campo de email
             OutlinedTextField(
                 value = formState.email,
                 onValueChange = { viewModel.onEmailChange(it) },

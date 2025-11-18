@@ -29,10 +29,10 @@ fun HomeTrabajadorScreen(
             if (NetworkUtils.isNetworkAvailable(context)) {
                 carritoViewModel.marcarEntradaUsadaRemota(codigoEscaneado)
             } else {
-                carritoViewModel.mensajeOperacion.value = "Sin conexión a internet"
+                carritoViewModel.mensajeOperacion.value = "Sin conexion a internet"
             }
         } else {
-            carritoViewModel.mensajeOperacion.value = "No se detectó ningún código"
+            carritoViewModel.mensajeOperacion.value = "No se detecto ningún codigo"
         }
     }
 
@@ -46,7 +46,7 @@ fun HomeTrabajadorScreen(
             OutlinedTextField(
                 value = codigoEscaneado,
                 onValueChange = { codigoEscaneado = it },
-                label = { Text("Ingrese código QR o ID") },
+                label = { Text("Ingrese codigo QR o ID") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -74,10 +74,10 @@ fun HomeTrabajadorScreen(
                         if (NetworkUtils.isNetworkAvailable(context)) {
                             carritoViewModel.marcarEntradaUsadaRemota(codigoEscaneado)
                         } else {
-                            carritoViewModel.mensajeOperacion.value = "Sin conexión a internet"
+                            carritoViewModel.mensajeOperacion.value = "Sin conexion a internet"
                         }
                     } else {
-                        carritoViewModel.mensajeOperacion.value = "Debe ingresar o escanear un código"
+                        carritoViewModel.mensajeOperacion.value = "Debe ingresar o escanear un codigo"
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)

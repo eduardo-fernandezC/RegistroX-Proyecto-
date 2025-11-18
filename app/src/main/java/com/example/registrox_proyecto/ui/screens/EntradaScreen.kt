@@ -39,7 +39,7 @@ fun EntradasScreen(
             if (NetworkUtils.isNetworkAvailable(context)) {
                 carritoViewModel.actualizarUsuario()
             } else {
-                carritoViewModel.mensajeOperacion.value = "Sin conexión a internet"
+                carritoViewModel.mensajeOperacion.value = "Sin conexion a internet"
             }
         }
     }
@@ -149,14 +149,14 @@ fun TicketCard(
             qrBitmap?.let {
                 Image(
                     bitmap = it.asImageBitmap(),
-                    contentDescription = "Código QR del ticket",
+                    contentDescription = "Codigo QR del ticket",
                     modifier = Modifier
                         .size(220.dp)
                         .padding(8.dp)
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Código: ${ticket.codigoQR ?: "No disponible"}")
+            Text("Codigo: ${ticket.codigoQR ?: "No disponible"}")
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,

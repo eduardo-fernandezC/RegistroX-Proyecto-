@@ -29,10 +29,10 @@ fun ScannerScreen(
                 viewModel.validarEntrada(result.contents)
                 mensaje = "Validando entrada..."
             } else {
-                mensaje = "Sin conexión a internet"
+                mensaje = "Sin conexion a internet"
             }
         } else {
-            mensaje = "No se detectó ningún código"
+            mensaje = "No se detecto ningún codigo"
         }
     }
 
@@ -86,8 +86,8 @@ fun ScannerScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            OutlinedButton(onClick = { mensaje = "Introduce manualmente el código si procede." }) {
-                Text("Validación Manual")
+            OutlinedButton(onClick = { mensaje = "Introduce manualmente el codigo si procede." }) {
+                Text("Validacion Manual")
             }
         }
     }
