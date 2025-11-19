@@ -48,7 +48,7 @@ class CarritoViewModel(
     fun comprar() {
         viewModelScope.launch {
             if (!NetworkUtils.isNetworkAvailable(context())) {
-                mensajeOperacion.value = "Sin conexión a internet"
+                mensajeOperacion.value = "Sin conexion a internet"
                 return@launch
             }
 
@@ -131,13 +131,13 @@ class CarritoViewModel(
 
     fun limpiar() {
         carrito.clear()
-        mensajeOperacion.value = "Carrito vacío"
+        mensajeOperacion.value = "Carrito vacio"
     }
 
     fun actualizarUsuario() {
         viewModelScope.launch {
             if (!NetworkUtils.isNetworkAvailable(context())) {
-                mensajeOperacion.value = "Sin conexión a internet"
+                mensajeOperacion.value = "Sin conexion a internet"
                 return@launch
             }
 
@@ -159,7 +159,7 @@ class CarritoViewModel(
     fun marcarEntradaUsadaRemota(codigoQR: String) {
         viewModelScope.launch {
             if (!NetworkUtils.isNetworkAvailable(context())) {
-                mensajeOperacion.value = "Sin conexión a internet"
+                mensajeOperacion.value = "Sin conexion a internet"
                 return@launch
             }
 

@@ -1,6 +1,5 @@
 package com.example.registrox_proyecto.ui.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.registrox_proyecto.data.model.Entrada
@@ -16,22 +15,27 @@ class EntradasApiViewModel(
     private val _entradas = MutableStateFlow<List<Entrada>>(emptyList())
     val entradas: StateFlow<List<Entrada>> = _entradas
 
-    private val _mensaje = MutableStateFlow<String>("")
+    private val _mensaje = MutableStateFlow("")
     val mensaje: StateFlow<String> = _mensaje
 
-    fun cargarEntradas() {
+    fun cargarEntradas(hasInternet: Boolean) {
         viewModelScope.launch {
-            val response = repository.obtenerEntradas()
-            if (response.isSuccessful) {
-                val lista = response.body() ?: emptyList()
-                lista.forEach { entrada ->
-                    Log.d("ENTRADA_API", "Título: ${entrada.titulo} | Email: ${entrada.usuarioEmail}")
+
+            if (!hasInternet) {
+                _mensaje.value = "Sin conexion a internet"
+                return@launch
+            }
+
+            try {
+                val response = repository.obtenerEntradas()
+                if (response.isSuccessful) {
+                    _entradas.value = response.body() ?: emptyList()
+                } else {
+                    _mensaje.value = "Error: ${response.code()}"
                 }
-                _entradas.value = lista
-            } else {
-                _mensaje.value = "Error: ${response.code()}"
+            } catch (e: Exception) {
+                _mensaje.value = "Error de red"
             }
         }
     }
-
 }

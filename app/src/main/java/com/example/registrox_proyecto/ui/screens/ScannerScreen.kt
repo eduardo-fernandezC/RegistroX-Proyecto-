@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.registrox_proyecto.data.scannerqr.ScannerActivity
+import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.ScannerViewModel
 import com.example.registrox_proyecto.utils.NetworkUtils
 import com.journeyapps.barcodescanner.ScanContract
@@ -26,7 +27,11 @@ fun ScannerScreen(
     val qrLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
             if (NetworkUtils.isNetworkAvailable(context)) {
-                viewModel.validarEntrada(result.contents)
+                val hasInternet = NetworkUtils.isNetworkAvailable(context)
+                viewModel.validarEntrada(
+                    codigoQR = result.contents,
+                    hasInternet = hasInternet
+                )
                 mensaje = "Validando entrada..."
             } else {
                 mensaje = "Sin conexion a internet"
@@ -39,55 +44,59 @@ fun ScannerScreen(
     val mensajeOperacion by viewModel.mensajeOperacion
 
     Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = mensaje,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            Button(
-                onClick = {
-                    val options = ScanOptions().apply {
-                        setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                        setPrompt("Apunta al QR de la entrada para validar")
-                        setCaptureActivity(ScannerActivity::class.java)
-                        setBeepEnabled(true)
-                        setBarcodeImageEnabled(true)
-                        setOrientationLocked(true)
-                    }
-                    qrLauncher.launch(options)
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+        InternetGuard {
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Text("Iniciar Escaneo")
-            }
-
-            Spacer(Modifier.height(16.dp))
-            if (mensajeOperacion.isNotEmpty()) {
                 Text(
-                    text = mensajeOperacion,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (mensajeOperacion.contains("correctamente", ignoreCase = true))
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.error
+                    text = mensaje,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-            }
 
-            Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(20.dp))
 
-            OutlinedButton(onClick = { mensaje = "Introduce manualmente el codigo si procede." }) {
-                Text("Validacion Manual")
+                Button(
+                    onClick = {
+                        val options = ScanOptions().apply {
+                            setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                            setPrompt("Apunta al QR de la entrada para validar")
+                            setCaptureActivity(ScannerActivity::class.java)
+                            setBeepEnabled(true)
+                            setBarcodeImageEnabled(true)
+                            setOrientationLocked(true)
+                        }
+                        qrLauncher.launch(options)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Iniciar Escaneo")
+                }
+
+                Spacer(Modifier.height(16.dp))
+                if (mensajeOperacion.isNotEmpty()) {
+                    Text(
+                        text = mensajeOperacion,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (mensajeOperacion.contains("correctamente", ignoreCase = true))
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.error
+                    )
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                OutlinedButton(onClick = {
+                    mensaje = "Introduce manualmente el codigo si procede."
+                }) {
+                    Text("Validacion Manual")
+                }
             }
         }
     }

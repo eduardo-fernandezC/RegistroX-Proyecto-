@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,96 +38,98 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text("Bienvenido a RegistroX", style = MaterialTheme.typography.headlineSmall)
-
-            OutlinedTextField(
-                value = formState.email,
-                onValueChange = { viewModel.onEmailChange(it) },
-                label = { Text("Correo") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                isError = formState.emailError != null
-            )
-
-            formState.emailError?.let { error ->
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-            }
-
-            OutlinedTextField(
-                value = formState.password,
-                onValueChange = { viewModel.onPasswordChange(it) },
-                label = { Text("Contraseña") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = if (passwordVisible)
-                    VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val icon =
-                        if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            icon,
-                            contentDescription = if (passwordVisible)
-                                "Ocultar contraseña" else "Mostrar contraseña"
-                        )
-                    }
-                },
-                isError = formState.passwordError != null
-            )
-
-            formState.passwordError?.let { error ->
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-            }
-
-            if (formState.loginError.isNotEmpty()) {
-                Text(
-                    text = formState.loginError,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
-            Button(
-                onClick = { viewModel.login() },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = formState.isValid && !isLoading
+        InternetGuard {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 20.dp)
+                Text("Bienvenido a RegistroX", style = MaterialTheme.typography.headlineSmall)
+
+                OutlinedTextField(
+                    value = formState.email,
+                    onValueChange = { viewModel.onEmailChange(it) },
+                    label = { Text("Correo") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = formState.emailError != null
+                )
+
+                formState.emailError?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+
+                OutlinedTextField(
+                    value = formState.password,
+                    onValueChange = { viewModel.onPasswordChange(it) },
+                    label = { Text("Contraseña") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = if (passwordVisible)
+                        VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val icon =
+                            if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                icon,
+                                contentDescription = if (passwordVisible)
+                                    "Ocultar contraseña" else "Mostrar contraseña"
+                            )
+                        }
+                    },
+                    isError = formState.passwordError != null
+                )
+
+                formState.passwordError?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+
+                if (formState.loginError.isNotEmpty()) {
+                    Text(
+                        text = formState.loginError,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                Button(
+                    onClick = { viewModel.login() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = formState.isValid && !isLoading
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text("Iniciar Sesion")
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 20.dp)
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text("Iniciar Sesion")
+                        }
                     }
                 }
-            }
 
-            TextButton(onClick = { navController.navigate("register") }) {
-                Text("¿No tienes cuenta? Registrate")
+                TextButton(onClick = { navController.navigate("register") }) {
+                    Text("¿No tienes cuenta? Registrate")
+                }
             }
         }
     }

@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.registrox_proyecto.data.model.Role
 import com.example.registrox_proyecto.data.model.User
+import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
 import com.example.registrox_proyecto.ui.viewmodel.ProfileViewModel
 
@@ -47,59 +48,61 @@ fun ProfileScreen(
         else -> "Perfil de usuario"
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        if (!imageUrl.isNullOrEmpty()) {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = "Foto de perfil",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(140.dp)
-                    .clip(CircleShape)
-                    .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
-            )
-            Spacer(Modifier.height(12.dp))
-            Button(onClick = { pickImageLauncher.launch("image/*") }) {
-                Text("Cambiar foto de perfil")
-            }
-        } else {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Sin imagen",
-                modifier = Modifier
-                    .size(140.dp)
-                    .clip(CircleShape),
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-            )
-            Spacer(Modifier.height(12.dp))
-            Button(onClick = { pickImageLauncher.launch("image/*") }) {
-                Text("Agregar foto de perfil")
-            }
-        }
-
-        Spacer(Modifier.height(30.dp))
-        Text(perfilTexto, style = MaterialTheme.typography.titleLarge)
-        Text(user.email, style = MaterialTheme.typography.bodyMedium)
-
-        Spacer(Modifier.height(40.dp))
-
-        Button(
-            onClick = {
-                profileViewModel.clearImage()
-                loginViewModel.logout()
-                navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+    InternetGuard {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Cerrar sesion")
+
+            if (!imageUrl.isNullOrEmpty()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Foto de perfil",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(140.dp)
+                        .clip(CircleShape)
+                        .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                )
+                Spacer(Modifier.height(12.dp))
+                Button(onClick = { pickImageLauncher.launch("image/*") }) {
+                    Text("Cambiar foto de perfil")
+                }
+            } else {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Sin imagen",
+                    modifier = Modifier
+                        .size(140.dp)
+                        .clip(CircleShape),
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                )
+                Spacer(Modifier.height(12.dp))
+                Button(onClick = { pickImageLauncher.launch("image/*") }) {
+                    Text("Agregar foto de perfil")
+                }
+            }
+
+            Spacer(Modifier.height(30.dp))
+            Text(perfilTexto, style = MaterialTheme.typography.titleLarge)
+            Text(user.email, style = MaterialTheme.typography.bodyMedium)
+
+            Spacer(Modifier.height(40.dp))
+
+            Button(
+                onClick = {
+                    profileViewModel.clearImage()
+                    loginViewModel.logout()
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Cerrar sesion")
+            }
         }
     }
 }

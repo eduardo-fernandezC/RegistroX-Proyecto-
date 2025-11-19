@@ -72,14 +72,14 @@ class LoginViewModel(
     private fun validateEmail(email: String): String? {
         val regex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
         return when {
-            email.isBlank() -> "El email no puede estar vacío"
-            !regex.matches(email) -> "Formato de email inválido"
+            email.isBlank() -> "El email no puede estar vacio"
+            !regex.matches(email) -> "Formato de email invalido"
             else -> null
         }
     }
 
     private fun validatePassword(password: String): String? {
-        return if (password.isBlank()) "La contraseña no puede estar vacía" else null
+        return if (password.isBlank()) "La contraseña no puede estar vacia" else null
     }
 
     private fun validateForm(state: LoginFormState): Boolean {
@@ -92,7 +92,7 @@ class LoginViewModel(
     fun login() {
         viewModelScope.launch {
             if (!_formState.value.isValid) {
-                _formState.update { it.copy(loginError = "Formulario inválido") }
+                _formState.update { it.copy(loginError = "Formulario invalido") }
                 return@launch
             }
 
@@ -102,7 +102,7 @@ class LoginViewModel(
             try {
                 val context = getApplication<Application>().applicationContext
                 if (!NetworkUtils.isNetworkAvailable(context)) {
-                    _formState.update { it.copy(loginError = "Sin conexión a internet") }
+                    _formState.update { it.copy(loginError = "Sin conexion a internet") }
                     _isLoading.value = false
                     return@launch
                 }
@@ -133,7 +133,7 @@ class LoginViewModel(
                 }
 
             } catch (e: Exception) {
-                _formState.update { it.copy(loginError = "Error de conexión: ${e.localizedMessage}") }
+                _formState.update { it.copy(loginError = "Error de conexion: ${e.localizedMessage}") }
                 Log.e("LOGIN_ERROR", "Error en login: ${e.localizedMessage}")
             }
 

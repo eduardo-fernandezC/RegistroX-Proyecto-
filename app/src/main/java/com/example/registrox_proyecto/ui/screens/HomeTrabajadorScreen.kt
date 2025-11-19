@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.registrox_proyecto.data.scannerqr.ScannerActivity
+import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.CarritoViewModel
 import com.example.registrox_proyecto.utils.NetworkUtils
 import com.journeyapps.barcodescanner.ScanContract
@@ -32,70 +33,73 @@ fun HomeTrabajadorScreen(
                 carritoViewModel.mensajeOperacion.value = "Sin conexion a internet"
             }
         } else {
-            carritoViewModel.mensajeOperacion.value = "No se detecto ningún codigo"
+            carritoViewModel.mensajeOperacion.value = "No se detecto ningun codigo"
         }
     }
 
     Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            OutlinedTextField(
-                value = codigoEscaneado,
-                onValueChange = { codigoEscaneado = it },
-                label = { Text("Ingrese codigo QR o ID") },
+        InternetGuard {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
-
-            Button(onClick = {
-                val options = ScanOptions().apply {
-                    setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                    setPrompt("Apunta al QR para escanear")
-                    setCameraId(0)
-                    setBeepEnabled(true)
-                    setOrientationLocked(true)
-                    setCaptureActivity(ScannerActivity::class.java)
-                }
-                qrLauncher.launch(options)
-            }) {
-                Text("Escanear QR")
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (codigoEscaneado.isNotEmpty()) {
-                        if (NetworkUtils.isNetworkAvailable(context)) {
-                            carritoViewModel.marcarEntradaUsadaRemota(codigoEscaneado)
-                        } else {
-                            carritoViewModel.mensajeOperacion.value = "Sin conexion a internet"
-                        }
-                    } else {
-                        carritoViewModel.mensajeOperacion.value = "Debe ingresar o escanear un codigo"
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    .padding(padding)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Validar Manual")
+                OutlinedTextField(
+                    value = codigoEscaneado,
+                    onValueChange = { codigoEscaneado = it },
+                    label = { Text("Ingrese codigo QR o ID") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
+
+                Button(onClick = {
+                    val options = ScanOptions().apply {
+                        setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                        setPrompt("Apunta al QR para escanear")
+                        setCameraId(0)
+                        setBeepEnabled(true)
+                        setOrientationLocked(true)
+                        setCaptureActivity(ScannerActivity::class.java)
+                    }
+                    qrLauncher.launch(options)
+                }) {
+                    Text("Escanear QR")
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        if (codigoEscaneado.isNotEmpty()) {
+                            if (NetworkUtils.isNetworkAvailable(context)) {
+                                carritoViewModel.marcarEntradaUsadaRemota(codigoEscaneado)
+                            } else {
+                                carritoViewModel.mensajeOperacion.value = "Sin conexion a internet"
+                            }
+                        } else {
+                            carritoViewModel.mensajeOperacion.value =
+                                "Debe ingresar o escanear un codigo"
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Validar Manual")
+                }
+
+                Spacer(Modifier.height(24.dp))
+
+                Text(
+                    text = mensajeOperacion,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (mensajeOperacion.contains("correctamente", true))
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
-
-            Spacer(Modifier.height(24.dp))
-
-            Text(
-                text = mensajeOperacion,
-                style = MaterialTheme.typography.titleMedium,
-                color = if (mensajeOperacion.contains("correctamente", true))
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
         }
     }
 }

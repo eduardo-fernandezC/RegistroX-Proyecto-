@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.registrox_proyecto.data.model.CompraEntrada
 import com.example.registrox_proyecto.navigation.Routes
+import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.CarritoViewModel
 import com.example.registrox_proyecto.utils.NetworkUtils
 import com.example.registrox_proyecto.utils.QRCodeGenerator
@@ -47,59 +48,61 @@ fun EntradasScreen(
     Scaffold(
         topBar = { TopAppBar(title = { Text("Mis Entradas") }) }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-        ) {
-            if (mensaje.contains("Error", true)) {
-                Text(
-                    text = mensaje,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
-            }
-            if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+        InternetGuard {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp)
+            ) {
+                if (mensaje.contains("Error", true)) {
+                    Text(
+                        text = mensaje,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
                 }
-            } else if (tickets.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No tienes entradas compradas")
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 8.dp)
-                ) {
-                    items(tickets) { ticket ->
-                        TicketCard(
-                            ticket = ticket,
-                            onClick = {
-                                ticket.codigoQR?.let { codigo ->
-                                    navController.navigate("${Routes.DETALLE}/$codigo")
-                                }
-                            }
-                        )
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { carritoViewModel.eliminarOcupadas() },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Eliminar entradas usadas")
+                } else if (tickets.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No tienes entradas compradas")
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 8.dp)
+                    ) {
+                        items(tickets) { ticket ->
+                            TicketCard(
+                                ticket = ticket,
+                                onClick = {
+                                    ticket.codigoQR?.let { codigo ->
+                                        navController.navigate("${Routes.DETALLE}/$codigo")
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { carritoViewModel.eliminarOcupadas() },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Eliminar entradas usadas")
+                    }
                 }
             }
         }

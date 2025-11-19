@@ -20,14 +20,19 @@ class ComprasViewModel(
 
     fun cargarCompras() {
         viewModelScope.launch {
-            val response = repository.obtenerCompras()
-            if (response.isSuccessful) {
-                _compras.value = response.body() ?: emptyList()
-                _mensaje.value = ""
-            } else {
-                _mensaje.value = "Error al obtener compras: ${response.code()}"
+            try {
+                val response = repository.obtenerCompras()
+                if (response.isSuccessful) {
+                    _compras.value = response.body() ?: emptyList()
+                    _mensaje.value = ""
+                } else {
+                    _mensaje.value = "Error al obtener compras: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                _mensaje.value = "Sin conexión a internet"
             }
         }
     }
+
 
 }

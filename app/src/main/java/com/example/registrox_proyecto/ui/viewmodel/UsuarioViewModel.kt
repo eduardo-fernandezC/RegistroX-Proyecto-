@@ -20,14 +20,19 @@ class UsuarioViewModel(
 
     fun cargarUsuarios() {
         viewModelScope.launch {
-            val response = repository.obtenerUsuarios()
-            if (response.isSuccessful) {
-                _usuarios.value = response.body() ?: emptyList()
-            } else {
-                _mensaje.value = "Error al cargar usuarios: ${response.code()}"
+            try {
+                val response = repository.obtenerUsuarios()
+                if (response.isSuccessful) {
+                    _usuarios.value = response.body() ?: emptyList()
+                } else {
+                    _mensaje.value = "Error al cargar usuarios: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                _mensaje.value = "Sin conexion a internet"
             }
         }
     }
+
 
     fun crearUsuario(usuario: Usuario) {
         viewModelScope.launch {

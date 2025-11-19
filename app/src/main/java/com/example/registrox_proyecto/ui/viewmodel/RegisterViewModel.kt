@@ -67,8 +67,8 @@ class RegisterViewModel(
     private fun validateEmail(email: String): String? {
         val emailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
         return when {
-            email.isBlank() -> "El correo no puede estar vacío"
-            !emailRegex.matches(email) -> "Debe ingresar un correo válido"
+            email.isBlank() -> "El correo no puede estar vacio"
+            !emailRegex.matches(email) -> "Debe ingresar un correo valido"
             else -> null
         }
     }
@@ -76,8 +76,8 @@ class RegisterViewModel(
     private fun validatePassword(password: String): String? {
         val regex = Regex("^(?=.*[A-Z])(?=.*\\d).{6,}$")
         return when {
-            password.isBlank() -> "La contraseña no puede estar vacía"
-            !regex.matches(password) -> "Debe tener al menos 6 caracteres, una mayúscula y un número"
+            password.isBlank() -> "La contraseña no puede estar vacia"
+            !regex.matches(password) -> "Debe tener al menos 6 caracteres, una mayuscula y un numero"
             else -> null
         }
     }
@@ -102,7 +102,7 @@ class RegisterViewModel(
     fun register() {
         viewModelScope.launch {
             if (!_formState.value.isValid) {
-                _registerResult.value = RegisterResult.Error("Formulario inválido")
+                _registerResult.value = RegisterResult.Error("Formulario invalido")
                 return@launch
             }
 
@@ -111,7 +111,7 @@ class RegisterViewModel(
 
             val context = getApplication<Application>().applicationContext
             if (!NetworkUtils.isNetworkAvailable(context)) {
-                _registerResult.value = RegisterResult.Error("Sin conexión a internet")
+                _registerResult.value = RegisterResult.Error("Sin conexion a internet")
                 _isLoading.value = false
                 return@launch
             }
@@ -132,10 +132,10 @@ class RegisterViewModel(
                     )
                     _registerResult.value = RegisterResult.Success(user)
                 } else {
-                    _registerResult.value = RegisterResult.Error("Error al registrar el usuario (ya existe o API inactiva)")
+                    _registerResult.value = RegisterResult.Error("Error al registrar el usuario")
                 }
             } catch (e: Exception) {
-                _registerResult.value = RegisterResult.Error("Error de conexión con el servidor")
+                _registerResult.value = RegisterResult.Error("Error de conexion con el servidor")
             }
 
             _isLoading.value = false

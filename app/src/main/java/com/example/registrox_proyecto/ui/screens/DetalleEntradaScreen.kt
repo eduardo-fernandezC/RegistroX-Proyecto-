@@ -15,6 +15,7 @@ import com.example.registrox_proyecto.utils.QRCodeGenerator
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
+import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,26 +46,28 @@ fun DetalleEntradaScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            qrBitmap?.let {
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = "QR ampliado",
-                    modifier = Modifier
-                        .size(300.dp)
-                        .padding(8.dp)
-                )
-            }
+        InternetGuard {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                qrBitmap?.let {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = "QR ampliado",
+                        modifier = Modifier
+                            .size(300.dp)
+                            .padding(8.dp)
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(20.dp))
-            Text("Codigo: $codigoQR", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("Codigo: $codigoQR", style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }
