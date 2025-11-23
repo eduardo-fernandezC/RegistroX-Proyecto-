@@ -35,9 +35,8 @@ fun ProfileScreenTestable(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // IMAGEN / ICONO
         if (!imageUrl.isNullOrEmpty()) {
-            // Simulación de imagen reemplazando AsyncImage
+
             Box(
                 modifier = Modifier
                     .size(140.dp)

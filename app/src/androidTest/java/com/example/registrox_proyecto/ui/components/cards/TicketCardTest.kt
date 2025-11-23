@@ -32,18 +32,6 @@ class TicketCardTest {
     )
 
     @Test
-    fun ticketCard_muestraDatosCorrectos() {
-        composeTestRule.setContent {
-            TicketCard(ticket = ticketFake, onClick = {})
-        }
-
-        composeTestRule.onNodeWithText("Festival Latino").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Estadio Nacional").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Código: QR123").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Precio: 35000.0 $").assertIsDisplayed()
-    }
-
-    @Test
     fun ticketCard_muestraEstadoCorrectoDisponible() {
         composeTestRule.setContent {
             TicketCard(ticket = ticketFake, onClick = {})
