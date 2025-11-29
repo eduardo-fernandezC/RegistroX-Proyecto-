@@ -1,12 +1,16 @@
 package com.example.registrox_proyecto
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import com.example.registrox_proyecto.ui.theme.RegistroXProyectoTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,13 +33,40 @@ import com.example.registrox_proyecto.ui.components.topbar.DefaultTopBar
 import com.example.registrox_proyecto.ui.components.topbar.HomeTopBar
 import com.example.registrox_proyecto.ui.components.topbar.TrabajadorTopBar
 import com.example.registrox_proyecto.ui.screens.*
-import com.example.registrox_proyecto.ui.theme.RegistroXProyectoTheme
 import com.example.registrox_proyecto.ui.viewmodel.*
 
 class MainActivity : ComponentActivity() {
+
+    private val permisosNecesarios: Array<String> by lazy {
+        val permisos = mutableListOf(
+            Manifest.permission.CAMERA
+        )
+
+        permisos.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        permisos.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permisos.add(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            permisos.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+
+        permisos.toTypedArray()
+    }
+
+    private val permisosLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { resultados ->
+            resultados.forEach { (permiso, otorgado) ->
+                android.util.Log.d("PERMISOS", "$permiso => $otorgado")
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        permisosLauncher.launch(permisosNecesarios)
+
         setContent {
             RegistroXProyectoTheme {
                 RegistroXApp()
@@ -43,6 +74,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
 @Composable
 fun RegistroXApp() {
