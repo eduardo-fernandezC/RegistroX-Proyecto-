@@ -32,7 +32,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 
-
 @Composable
 fun OtpScreen(
     navController: NavHostController,
@@ -53,23 +52,6 @@ fun OtpScreen(
         }
     )
 
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val isGranted = ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-
-            if (!isGranted) {
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            } else {
-                sendOtpNotification(context, otpCode)
-            }
-        } else {
-            sendOtpNotification(context, otpCode)
-        }
-    }
-
     Scaffold { padding ->
         Column(
             modifier = Modifier
@@ -79,6 +61,7 @@ fun OtpScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text("Codigo de verificacion", style = MaterialTheme.typography.headlineMedium)
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -101,7 +84,21 @@ fun OtpScreen(
                 otpCode = generateOtp()
                 inputCode = ""
                 errorText = ""
-                sendOtpNotification(context, otpCode)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    val isGranted = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (!isGranted) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        sendOtpNotification(context, otpCode)
+                    }
+                } else {
+                    sendOtpNotification(context, otpCode)
+                }
             }) {
                 Text("Enviar codigo")
             }
@@ -132,6 +129,7 @@ fun OtpScreen(
         }
     }
 }
+
 
 @Composable
 fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
