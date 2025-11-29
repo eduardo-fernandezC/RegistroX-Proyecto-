@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -97,8 +98,8 @@ fun RegistroXApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val hideTopBar = currentRoute in listOf(Routes.LOGIN, Routes.REGISTER, Routes.DETALLE)
-    val hideBottomBar = currentRoute in listOf(Routes.LOGIN, Routes.REGISTER, Routes.DETALLE)
+    val hideTopBar = currentRoute in listOf(Routes.LOGIN, Routes.REGISTER, Routes.DETALLE, Routes.OTP)
+    val hideBottomBar = currentRoute in listOf(Routes.LOGIN, Routes.REGISTER, Routes.DETALLE, Routes.OTP)
 
     val bottomItems = listOf(BottomNavItem.Home, BottomNavItem.QR, BottomNavItem.Profile) +
             if (user?.role == com.example.registrox_proyecto.data.model.Role.TRABAJADOR) {
@@ -159,11 +160,34 @@ fun NavGraph(
 ) {
     val user by loginViewModel.user.collectAsStateWithLifecycle()
 
+    // 👇 Simula si el OTP fue verificado en esta sesión
+    var otpVerified by rememberSaveable { mutableStateOf(false) }
+
+    // 👇 Determina pantalla inicial
+    val startDestination = when {
+        !otpVerified -> Routes.OTP // 👈 Mostramos OTP al inicio
+        user == null -> Routes.LOGIN
+        else -> Routes.HOME
+    }
+
     NavHost(
         navController = navController,
-        startDestination = Routes.LOGIN,
+        startDestination = startDestination, // 👈 Se usa ruta dinámica
         modifier = modifier
     ) {
+        // 👇 Pantalla de verificación OTP
+        composable(Routes.OTP) {
+            OtpScreen(
+                navController = navController,
+                onOtpVerified = {
+                    otpVerified = true
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.OTP) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Routes.LOGIN) {
             LoginScreen(navController = navController, viewModel = loginViewModel)
         }
