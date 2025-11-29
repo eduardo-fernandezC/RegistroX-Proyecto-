@@ -31,6 +31,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 
 @Composable
 fun OtpScreen(
@@ -53,83 +54,84 @@ fun OtpScreen(
     )
 
     Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        InternetGuard {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            Text("Codigo de verificacion", style = MaterialTheme.typography.headlineMedium)
+                Text("Codigo de verificacion", style = MaterialTheme.typography.headlineMedium)
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "Digite el codigo",
-                textAlign = TextAlign.Center,
-                fontSize = 14.sp
-            )
+                Text(
+                    text = "Digite el codigo",
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp
+                )
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            OtpInputField(code = inputCode) {
-                if (it.length <= 4) inputCode = it
-            }
+                OtpInputField(code = inputCode) {
+                    if (it.length <= 4) inputCode = it
+                }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = {
-                otpCode = generateOtp()
-                inputCode = ""
-                errorText = ""
+                TextButton(onClick = {
+                    otpCode = generateOtp()
+                    inputCode = ""
+                    errorText = ""
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    val isGranted = ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) == PackageManager.PERMISSION_GRANTED
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        val isGranted = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED
 
-                    if (!isGranted) {
-                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        if (!isGranted) {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            sendOtpNotification(context, otpCode)
+                        }
                     } else {
                         sendOtpNotification(context, otpCode)
                     }
-                } else {
-                    sendOtpNotification(context, otpCode)
+                }) {
+                    Text("Enviar codigo")
                 }
-            }) {
-                Text("Enviar codigo")
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    if (inputCode == otpCode) {
-                        errorText = ""
-                        onOtpVerified()
-                    } else {
-                        errorText = "incorrecto, intentelo denuevo"
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("VERIFICAR")
-            }
+                Button(
+                    onClick = {
+                        if (inputCode == otpCode) {
+                            errorText = ""
+                            onOtpVerified()
+                        } else {
+                            errorText = "incorrecto, intentelo denuevo"
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("VERIFICAR")
+                }
 
-            if (errorText.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(errorText, color = MaterialTheme.colorScheme.error)
+                if (errorText.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(errorText, color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }
 }
-
 
 @Composable
 fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
@@ -197,8 +199,6 @@ fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
         focusRequesters[0].requestFocus()
     }
 }
-
-
 
 
 fun generateOtp(): String {
