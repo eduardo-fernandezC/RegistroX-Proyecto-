@@ -160,22 +160,19 @@ fun NavGraph(
 ) {
     val user by loginViewModel.user.collectAsStateWithLifecycle()
 
-    // 👇 Simula si el OTP fue verificado en esta sesión
     var otpVerified by rememberSaveable { mutableStateOf(false) }
 
-    // 👇 Determina pantalla inicial
     val startDestination = when {
-        !otpVerified -> Routes.OTP // 👈 Mostramos OTP al inicio
+        !otpVerified -> Routes.OTP
         user == null -> Routes.LOGIN
         else -> Routes.HOME
     }
 
     NavHost(
         navController = navController,
-        startDestination = startDestination, // 👈 Se usa ruta dinámica
+        startDestination = startDestination,
         modifier = modifier
     ) {
-        // 👇 Pantalla de verificación OTP
         composable(Routes.OTP) {
             OtpScreen(
                 navController = navController,
