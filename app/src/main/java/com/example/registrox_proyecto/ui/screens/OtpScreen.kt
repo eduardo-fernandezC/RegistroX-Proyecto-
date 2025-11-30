@@ -60,7 +60,7 @@ fun OtpScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Código de verificación") },
+                title = { Text("Codigo de verificacion") },
                 navigationIcon = {
                     IconButton(onClick = {
                         viewModel.logout()
@@ -68,7 +68,7 @@ fun OtpScreen(
                             popUpTo(Routes.OTP) { inclusive = true }
                         }
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver atrás")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver atras")
                     }
                 }
             )
@@ -85,9 +85,9 @@ fun OtpScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Text("Código de verificación", style = MaterialTheme.typography.headlineMedium)
+                Text("Codigo de verificacion", style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.height(8.dp))
-                Text("Digite el código", fontSize = 14.sp)
+                Text("Digite el codigo", fontSize = 14.sp)
                 Spacer(Modifier.height(32.dp))
 
                 OtpInputField(code = inputCode) {
@@ -114,7 +114,7 @@ fun OtpScreen(
 
                     } else sendOtpNotification(context, otpCode)
 
-                }) { Text("Enviar código") }
+                }) { Text("Enviar codigo") }
 
                 Spacer(Modifier.height(16.dp))
 
@@ -123,7 +123,7 @@ fun OtpScreen(
                         if (inputCode == otpCode && otpCode.isNotEmpty())
                             onOtpVerified()
                         else
-                            errorText = "Código incorrecto"
+                            errorText = "Codigo incorrecto"
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("VERIFICAR") }
@@ -217,7 +217,7 @@ fun sendOtpNotification(context: Context, code: String) {
     val notification = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(android.R.drawable.ic_lock_idle_lock)
         .setContentTitle("OTP Code")
-        .setContentText("Tu código es: $code")
+        .setContentText("Tu codigo es: $code")
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .build()
 
