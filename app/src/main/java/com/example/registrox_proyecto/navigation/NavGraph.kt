@@ -41,16 +41,8 @@ fun NavGraph(
                 navController = navController,
                 viewModel = loginViewModel,
                 onOtpVerified = {
-                    val current = loginViewModel.user.value
-
-                    if (current?.role == Role.TRABAJADOR) {
-                        navController.navigate(Routes.TRABAJADOR) {
-                            popUpTo(Routes.OTP) { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.OTP) { inclusive = true }
-                        }
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
             )
@@ -81,7 +73,10 @@ fun NavGraph(
         }
 
         composable(Routes.ENTRADAS) {
-            EntradasScreen(navController, carritoViewModel)
+            EntradasScreen(
+                navController = navController,
+                carritoViewModel = carritoViewModel
+            )
         }
 
         composable(Routes.PROFILE) {
