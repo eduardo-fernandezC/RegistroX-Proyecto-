@@ -13,7 +13,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.registrox_proyecto.data.model.Role
+import com.example.registrox_proyecto.navigation.Routes
 import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
 
@@ -25,16 +25,14 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
+    // 🔥 Siempre que user cambie → Ir a OTP
     LaunchedEffect(user) {
         if (user != null) {
-
-            navController.navigate("otp") {
-                popUpTo("login") { inclusive = true }
+            navController.navigate(Routes.OTP) {
+                popUpTo(Routes.LOGIN) { inclusive = true }
             }
         }
     }
-
-
 
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -49,6 +47,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 Text("Bienvenido a RegistroX", style = MaterialTheme.typography.headlineSmall)
 
                 OutlinedTextField(
@@ -60,14 +59,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                     isError = formState.emailError != null
                 )
 
-                formState.emailError?.let { error ->
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
-                }
+                formState.emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
                 OutlinedTextField(
                     value = formState.password,
@@ -78,34 +70,20 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                     visualTransformation = if (passwordVisible)
                         VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        val icon =
-                            if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
-                                icon,
-                                contentDescription = if (passwordVisible)
-                                    "Ocultar contraseña" else "Mostrar contraseña"
+                                if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                contentDescription = null
                             )
                         }
                     },
                     isError = formState.passwordError != null
                 )
 
-                formState.passwordError?.let { error ->
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
-                }
+                formState.passwordError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
                 if (formState.loginError.isNotEmpty()) {
-                    Text(
-                        text = formState.loginError,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Text(formState.loginError, color = MaterialTheme.colorScheme.error)
                 }
 
                 Button(
@@ -113,26 +91,16 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     enabled = formState.isValid && !isLoading
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 20.dp)
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text("Iniciar Sesión")
-                        }
-                    }
+                    if (isLoading)
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    else
+                        Text("Iniciar Sesión")
                 }
 
-                // Registrar
-                TextButton(onClick = { navController.navigate("register") }) {
+                TextButton(onClick = { navController.navigate(Routes.REGISTER) }) {
                     Text("¿No tienes cuenta? Regístrate")
                 }
             }

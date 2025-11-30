@@ -6,7 +6,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.registrox_proyecto.data.model.Role
 import com.example.registrox_proyecto.ui.screens.*
 import com.example.registrox_proyecto.ui.viewmodel.*
 
@@ -21,11 +20,10 @@ fun NavGraph(
     comprasViewModel: ComprasViewModel,
     modifier: Modifier = Modifier
 ) {
-    val user by loginViewModel.user.collectAsStateWithLifecycle()
 
     NavHost(
         navController = navController,
-        startDestination = Routes.LOGIN,     // 🔥 YA NO DEPENDE DE OTP NI ROLES
+        startDestination = Routes.LOGIN,
         modifier = modifier
     ) {
         composable(Routes.LOGIN) {
@@ -35,16 +33,10 @@ fun NavGraph(
         composable(Routes.OTP) {
             OtpScreen(
                 navController = navController,
+                viewModel = loginViewModel,
                 onOtpVerified = {
-                    val current = user
-                    if (current != null && current.role == Role.TRABAJADOR) {
-                        navController.navigate(Routes.TRABAJADOR) {
-                            popUpTo(Routes.OTP) { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.OTP) { inclusive = true }
-                        }
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.OTP) { inclusive = true }
                     }
                 }
             )
@@ -54,35 +46,15 @@ fun NavGraph(
             HomeScreen(navController, carritoViewModel)
         }
 
-        composable(Routes.TRABAJADOR) {
-            val current = user
-            if (current?.role == Role.TRABAJADOR)
-                HomeTrabajadorScreen(
-                    onBackClick = { navController.navigate(Routes.HOME) },
-                    carritoViewModel = carritoViewModel
-                )
-            else {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.TRABAJADOR) { inclusive = true }
-                    }
-                }
-            }
-        }
-
         composable(Routes.REGISTER) {
             RegisterScreen(navController, registerViewModel)
         }
 
-        composable(Routes.ENTRADAS) {
-            EntradasScreen(navController, carritoViewModel)
-        }
-
         composable(Routes.PROFILE) {
-            val current = user
-            if (current != null) {
+            val user = loginViewModel.user.collectAsStateWithLifecycle().value
+            if (user != null) {
                 ProfileScreen(
-                    user = current,
+                    user = user,
                     loginViewModel = loginViewModel,
                     navController = navController,
                     profileViewModel = profileViewModel
@@ -94,6 +66,10 @@ fun NavGraph(
                     }
                 }
             }
+        }
+
+        composable(Routes.ENTRADAS) {
+            EntradasScreen(navController, carritoViewModel)
         }
 
         composable("${Routes.DETALLE}/{codigoQR}") { backStackEntry ->

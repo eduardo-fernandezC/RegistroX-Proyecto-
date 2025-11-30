@@ -32,17 +32,19 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.example.registrox_proyecto.ui.components.Net.InternetGuard
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import com.example.registrox_proyecto.navigation.Routes
+import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtpScreen(
     navController: NavHostController,
+    viewModel: LoginViewModel,
     onOtpVerified: () -> Unit
 ) {
+
     val context = LocalContext.current
 
     var otpCode by rememberSaveable { mutableStateOf("") }
@@ -52,9 +54,7 @@ fun OtpScreen(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) {
-            sendOtpNotification(context, otpCode)
-        }
+        if (granted) sendOtpNotification(context, otpCode)
     }
 
     Scaffold(
@@ -63,39 +63,38 @@ fun OtpScreen(
                 title = { Text("Código de verificación") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.popBackStack()
-                    }
-
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver atrás"
-                        )
+                        viewModel.logout()
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.OTP) { inclusive = true }
+                        }
+                    }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver atrás")
                     }
                 }
             )
         }
     ) { padding ->
+
         InternetGuard {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
                 Text("Código de verificación", style = MaterialTheme.typography.headlineMedium)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
                 Text("Digite el código", fontSize = 14.sp)
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(Modifier.height(32.dp))
 
                 OtpInputField(code = inputCode) {
                     if (it.length <= 4) inputCode = it
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
                 TextButton(onClick = {
                     otpCode = generateOtp()
@@ -103,42 +102,34 @@ fun OtpScreen(
                     errorText = ""
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        val isGranted = ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.POST_NOTIFICATIONS
+                        val granted = ContextCompat.checkSelfPermission(
+                            context, Manifest.permission.POST_NOTIFICATIONS
                         ) == PackageManager.PERMISSION_GRANTED
 
-                        if (!isGranted) {
-                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        } else {
-                            sendOtpNotification(context, otpCode)
-                        }
-                    } else {
-                        sendOtpNotification(context, otpCode)
-                    }
+                        if (!granted) {
+                            notificationPermissionLauncher.launch(
+                                Manifest.permission.POST_NOTIFICATIONS
+                            )
+                        } else sendOtpNotification(context, otpCode)
 
-                }) {
-                    Text("Enviar código")
-                }
+                    } else sendOtpNotification(context, otpCode)
 
-                Spacer(modifier = Modifier.height(16.dp))
+                }) { Text("Enviar código") }
+
+                Spacer(Modifier.height(16.dp))
 
                 Button(
                     onClick = {
-                        if (inputCode == otpCode && otpCode.isNotEmpty()) {
-                            errorText = ""
+                        if (inputCode == otpCode && otpCode.isNotEmpty())
                             onOtpVerified()
-                        } else {
+                        else
                             errorText = "Código incorrecto"
-                        }
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("VERIFICAR")
-                }
+                ) { Text("VERIFICAR") }
 
                 if (errorText.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(Modifier.height(12.dp))
                     Text(errorText, color = MaterialTheme.colorScheme.error)
                 }
             }
@@ -190,15 +181,12 @@ fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-                        color = MaterialTheme.colorScheme.background,
                         tonalElevation = 4.dp
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
-                        ) {
-                            innerTextField()
-                        }
+                        ) { innerTextField() }
                     }
                 }
             )
@@ -210,22 +198,20 @@ fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
     }
 }
 
-fun generateOtp(): String {
-    return (1000..9999).random().toString()
-}
+fun generateOtp(): String = (1000..9999).random().toString()
 
 fun sendOtpNotification(context: Context, code: String) {
     val channelId = "otp_channel"
-    val channelName = "OTP Notifications"
     val manager = NotificationManagerCompat.from(context)
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val channel = NotificationChannel(
-            channelId,
-            channelName,
-            NotificationManager.IMPORTANCE_HIGH
+        manager.createNotificationChannel(
+            NotificationChannel(
+                channelId,
+                "OTP Notifications",
+                NotificationManager.IMPORTANCE_HIGH
+            )
         )
-        manager.createNotificationChannel(channel)
     }
 
     val notification = NotificationCompat.Builder(context, channelId)
@@ -235,12 +221,11 @@ fun sendOtpNotification(context: Context, code: String) {
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .build()
 
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-        ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-    ) {
-        manager.notify(1, notification)
-    }
+    val granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+    if (granted) manager.notify(1, notification)
 }
