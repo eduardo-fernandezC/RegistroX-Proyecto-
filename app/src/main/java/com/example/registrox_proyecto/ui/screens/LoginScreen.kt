@@ -13,7 +13,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.registrox_proyecto.data.model.Role
 import com.example.registrox_proyecto.navigation.Routes
 import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
@@ -22,25 +21,29 @@ import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
 
-    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val user by viewModel.user.collectAsStateWithLifecycle()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     LaunchedEffect(user) {
-        if (user != null) {
+        if (user != null && viewModel.justLoggedIn) {
+
             navController.navigate(Routes.OTP) {
                 popUpTo(Routes.LOGIN) { inclusive = true }
             }
+
+            viewModel.justLoggedIn = false
         }
     }
 
-    var passwordVisible by remember { mutableStateOf(false) }
+    var passVisible by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         InternetGuard {
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -54,33 +57,25 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                     value = formState.email,
                     onValueChange = { viewModel.onEmailChange(it) },
                     label = { Text("Correo") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = formState.emailError != null
+                    modifier = Modifier.fillMaxWidth()
                 )
-
-                formState.emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
                 OutlinedTextField(
                     value = formState.password,
                     onValueChange = { viewModel.onPasswordChange(it) },
                     label = { Text("Contraseña") },
-                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = if (passwordVisible)
-                        VisualTransformation.None else PasswordVisualTransformation(),
+                    visualTransformation =
+                        if (passVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        IconButton(onClick = { passVisible = !passVisible }) {
                             Icon(
-                                if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                contentDescription = null
+                                if (passVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                null
                             )
                         }
-                    },
-                    isError = formState.passwordError != null
+                    }
                 )
-
-                formState.passwordError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
                 if (formState.loginError.isNotEmpty()) {
                     Text(formState.loginError, color = MaterialTheme.colorScheme.error)
@@ -89,15 +84,12 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                 Button(
                     onClick = { viewModel.login() },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = formState.isValid && !isLoading
+                    enabled = !isLoading
                 ) {
                     if (isLoading)
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
                     else
-                        Text("Iniciar Sesión")
+                        Text("Iniciar sesión")
                 }
 
                 TextButton(onClick = { navController.navigate(Routes.REGISTER) }) {

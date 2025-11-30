@@ -23,9 +23,13 @@ fun NavGraph(
 ) {
     val user by loginViewModel.user.collectAsStateWithLifecycle()
 
+    val startDestination =
+        if (user == null) Routes.LOGIN
+        else Routes.HOME
+
     NavHost(
         navController = navController,
-        startDestination = Routes.LOGIN,
+        startDestination = startDestination,
         modifier = modifier
     ) {
         composable(Routes.LOGIN) {
@@ -37,27 +41,47 @@ fun NavGraph(
                 navController = navController,
                 viewModel = loginViewModel,
                 onOtpVerified = {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.OTP) { inclusive = true }
+                    val current = loginViewModel.user.value
+
+                    if (current?.role == Role.TRABAJADOR) {
+                        navController.navigate(Routes.TRABAJADOR) {
+                            popUpTo(Routes.OTP) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.OTP) { inclusive = true }
+                        }
                     }
                 }
             )
         }
-
 
         composable(Routes.HOME) {
             HomeScreen(navController, carritoViewModel)
         }
 
         composable(Routes.TRABAJADOR) {
-            HomeTrabajadorScreen(
-                onBackClick = { navController.navigate(Routes.HOME) },
-                carritoViewModel = carritoViewModel
-            )
+            val current = user
+            if (current?.role == Role.TRABAJADOR)
+                HomeTrabajadorScreen(
+                    onBackClick = { navController.navigate(Routes.HOME) },
+                    carritoViewModel = carritoViewModel
+                )
+            else {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.TRABAJADOR) { inclusive = true }
+                    }
+                }
+            }
         }
 
         composable(Routes.REGISTER) {
             RegisterScreen(navController, registerViewModel)
+        }
+
+        composable(Routes.ENTRADAS) {
+            EntradasScreen(navController, carritoViewModel)
         }
 
         composable(Routes.PROFILE) {
@@ -69,15 +93,17 @@ fun NavGraph(
                     navController = navController,
                     profileViewModel = profileViewModel
                 )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.PROFILE) { inclusive = true }
+                    }
+                }
             }
         }
 
-        composable(Routes.ENTRADAS) {
-            EntradasScreen(navController, carritoViewModel)
-        }
-
-        composable("${Routes.DETALLE}/{codigoQR}") {
-            val codigoQR = it.arguments?.getString("codigoQR") ?: ""
+        composable("${Routes.DETALLE}/{codigoQR}") { backStackEntry ->
+            val codigoQR = backStackEntry.arguments?.getString("codigoQR") ?: ""
             DetalleEntradaScreen(navController, codigoQR)
         }
 
@@ -86,4 +112,3 @@ fun NavGraph(
         }
     }
 }
-

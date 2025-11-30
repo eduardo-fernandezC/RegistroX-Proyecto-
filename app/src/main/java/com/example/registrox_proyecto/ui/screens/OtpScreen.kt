@@ -123,16 +123,17 @@ fun OtpScreen(
                 Spacer(Modifier.height(16.dp))
 
                 Button(
-                    modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         if (inputCode == otpCode && otpCode.isNotEmpty()) {
+                            errorText = ""
                             viewModel.justLoggedIn = false
                             onOtpVerified()
                         } else {
-                            errorText = "Codigo incorrecto"
+                            errorText = "Código incorrecto"
                         }
                     }
-                ) {
+                )
+                {
                     Text("VERIFICAR")
                 }
 
