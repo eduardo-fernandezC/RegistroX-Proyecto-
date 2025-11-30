@@ -27,17 +27,14 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
 
     LaunchedEffect(user) {
         if (user != null) {
-            if (user!!.role == Role.TRABAJADOR) {
-                navController.navigate("otp") {
-                    popUpTo("login") { inclusive = true }
-                }
-            } else {
-                navController.navigate("home") {
-                    popUpTo("login") { inclusive = true }
-                }
+
+            navController.navigate("otp") {
+                popUpTo("login") { inclusive = true }
             }
         }
     }
+
+
 
     var passwordVisible by remember { mutableStateOf(false) }
 

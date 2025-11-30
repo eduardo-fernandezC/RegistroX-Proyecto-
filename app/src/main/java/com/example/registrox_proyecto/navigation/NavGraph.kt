@@ -1,7 +1,6 @@
 package com.example.registrox_proyecto.navigation
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -24,38 +23,63 @@ fun NavGraph(
 ) {
     val user by loginViewModel.user.collectAsStateWithLifecycle()
 
-    var otpVerified by rememberSaveable { mutableStateOf(false) }
-
-    val startDestination = when {
-        user?.role == Role.TRABAJADOR && !otpVerified -> Routes.OTP
-        user == null -> Routes.LOGIN
-        else -> Routes.HOME
-    }
-
     NavHost(
         navController = navController,
-        startDestination = startDestination,
+        startDestination = Routes.LOGIN,
         modifier = modifier
     ) {
-
-        composable(Routes.OTP) {
-            OtpScreen(
-                navController = navController,
-                onOtpVerified = {
-                    otpVerified = true
-                    navController.navigate(Routes.TRABAJADOR) {
-                        popUpTo(Routes.OTP) { inclusive = true }
-                    }
-                }
-            )
-        }
-
         composable(Routes.LOGIN) {
             LoginScreen(navController = navController, viewModel = loginViewModel)
         }
 
+        composable(Routes.OTP) {
+            val currentUser = user
+
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.OTP) { inclusive = true }
+                    }
+                }
+            } else {
+                OtpScreen(
+                    navController = navController,
+                    onOtpVerified = {
+                        if (currentUser.role == Role.TRABAJADOR) {
+                            navController.navigate(Routes.TRABAJADOR) {
+                                popUpTo(Routes.OTP) { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(Routes.HOME) {
+                                popUpTo(Routes.OTP) { inclusive = true }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
         composable(Routes.HOME) {
-            HomeScreen(navController = navController, carritoViewModel = carritoViewModel)
+            HomeScreen(
+                navController = navController,
+                carritoViewModel = carritoViewModel
+            )
+        }
+
+        composable(Routes.TRABAJADOR) {
+            val currentUser = user
+            if (currentUser?.role == Role.TRABAJADOR) {
+                HomeTrabajadorScreen(
+                    onBackClick = { navController.navigate(Routes.HOME) },
+                    carritoViewModel = carritoViewModel
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.TRABAJADOR) { inclusive = true }
+                    }
+                }
+            }
         }
 
         composable(Routes.REGISTER) {
@@ -82,13 +106,6 @@ fun NavGraph(
                     }
                 }
             }
-        }
-
-        composable(Routes.TRABAJADOR) {
-            HomeTrabajadorScreen(
-                onBackClick = { navController.navigate(Routes.HOME) },
-                carritoViewModel = carritoViewModel
-            )
         }
 
         composable("${Routes.DETALLE}/{codigoQR}") { backStackEntry ->
