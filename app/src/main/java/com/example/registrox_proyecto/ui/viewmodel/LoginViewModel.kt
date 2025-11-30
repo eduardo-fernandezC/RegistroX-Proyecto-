@@ -32,12 +32,17 @@ class LoginViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    var justLoggedIn: Boolean = false
+
     init {
         viewModelScope.launch {
             val savedEmail = authDataStore.email.first() ?: ""
             val savedRole = authDataStore.role.first() ?: ""
+
             if (savedEmail.isNotBlank() && savedRole.isNotBlank()) {
-                val roleEnum = if (savedRole == "TRABAJADOR") Role.TRABAJADOR else Role.USUARIO
+                val roleEnum =
+                    if (savedRole == "TRABAJADOR") Role.TRABAJADOR else Role.USUARIO
+
                 _user.value = User(
                     id = 0L,
                     email = savedEmail,
@@ -109,10 +114,10 @@ class LoginViewModel(
 
                 val email = _formState.value.email.trim()
                 val password = _formState.value.password
-
                 val usuarioAPI = authRepository.login(email, password)
 
                 if (usuarioAPI != null) {
+
                     val roleEnum = when {
                         usuarioAPI.email.endsWith("@registrox.cl", ignoreCase = true) -> Role.TRABAJADOR
                         usuarioAPI.rol.id?.toInt() == 1 -> Role.TRABAJADOR
@@ -124,17 +129,21 @@ class LoginViewModel(
                         email = usuarioAPI.email,
                         role = roleEnum
                     )
+
                     _formState.update { it.copy(loginError = "") }
+
+                    justLoggedIn = true
+
                     authDataStore.saveUser(usuarioAPI.email, roleEnum.name)
 
                     Log.d("LOGIN", "Usuario logueado: ${usuarioAPI.email}, Rol: $roleEnum")
+
                 } else {
-                    _formState.update { it.copy(loginError = "Correo no encontrado o incorrecto") }
+                    _formState.update { it.copy(loginError = "Correo o contraseña incorrectos") }
                 }
 
             } catch (e: Exception) {
                 _formState.update { it.copy(loginError = "Error de conexion: ${e.localizedMessage}") }
-                Log.e("LOGIN_ERROR", "Error en login: ${e.localizedMessage}")
             }
 
             _isLoading.value = false
@@ -145,6 +154,7 @@ class LoginViewModel(
         viewModelScope.launch {
             authRepository.logout()
             authDataStore.saveUser("", "")
+            justLoggedIn = false
             _user.value = null
             _formState.value = LoginFormState()
         }

@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,10 +33,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
-import com.example.registrox_proyecto.ui.components.Net.InternetGuard
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import com.example.registrox_proyecto.navigation.Routes
+import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,7 +44,6 @@ fun OtpScreen(
     viewModel: LoginViewModel,
     onOtpVerified: () -> Unit
 ) {
-
     val context = LocalContext.current
 
     var otpCode by rememberSaveable { mutableStateOf("") }
@@ -54,7 +53,9 @@ fun OtpScreen(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) sendOtpNotification(context, otpCode)
+        if (granted) {
+            sendOtpNotification(context, otpCode)
+        }
     }
 
     Scaffold(
@@ -68,7 +69,7 @@ fun OtpScreen(
                             popUpTo(Routes.OTP) { inclusive = true }
                         }
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver atras")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 }
             )
@@ -87,11 +88,11 @@ fun OtpScreen(
 
                 Text("Codigo de verificacion", style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.height(8.dp))
-                Text("Digite el codigo", fontSize = 14.sp)
+                Text("Digite el código enviado", fontSize = 14.sp)
                 Spacer(Modifier.height(32.dp))
 
-                OtpInputField(code = inputCode) {
-                    if (it.length <= 4) inputCode = it
+                OtpInputField(code = inputCode) { newValue ->
+                    if (newValue.length <= 4) inputCode = newValue
                 }
 
                 Spacer(Modifier.height(12.dp))
@@ -103,7 +104,8 @@ fun OtpScreen(
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         val granted = ContextCompat.checkSelfPermission(
-                            context, Manifest.permission.POST_NOTIFICATIONS
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
                         ) == PackageManager.PERMISSION_GRANTED
 
                         if (!granted) {
@@ -114,19 +116,25 @@ fun OtpScreen(
 
                     } else sendOtpNotification(context, otpCode)
 
-                }) { Text("Enviar codigo") }
+                }) {
+                    Text("Enviar codigo")
+                }
 
                 Spacer(Modifier.height(16.dp))
 
                 Button(
+                    modifier = Modifier.fillMaxWidth(),
                     onClick = {
-                        if (inputCode == otpCode && otpCode.isNotEmpty())
+                        if (inputCode == otpCode && otpCode.isNotEmpty()) {
+                            viewModel.justLoggedIn = false
                             onOtpVerified()
-                        else
+                        } else {
                             errorText = "Codigo incorrecto"
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text("VERIFICAR") }
+                        }
+                    }
+                ) {
+                    Text("VERIFICAR")
+                }
 
                 if (errorText.isNotEmpty()) {
                     Spacer(Modifier.height(12.dp))
@@ -177,7 +185,7 @@ fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
                     textAlign = TextAlign.Center
                 ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                decorationBox = { innerTextField ->
+                decorationBox = { innerTF ->
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
@@ -186,7 +194,9 @@ fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
-                        ) { innerTextField() }
+                        ) {
+                            innerTF()
+                        }
                     }
                 }
             )

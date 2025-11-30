@@ -21,7 +21,6 @@ fun NavGraph(
     comprasViewModel: ComprasViewModel,
     modifier: Modifier = Modifier
 ) {
-
     val user by loginViewModel.user.collectAsStateWithLifecycle()
 
     NavHost(
@@ -38,19 +37,13 @@ fun NavGraph(
                 navController = navController,
                 viewModel = loginViewModel,
                 onOtpVerified = {
-                    val current = user
-                    if (current?.role == Role.TRABAJADOR) {
-                        navController.navigate(Routes.TRABAJADOR) {
-                            popUpTo(Routes.OTP) { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.OTP) { inclusive = true }
-                        }
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.OTP) { inclusive = true }
                     }
                 }
             )
         }
+
 
         composable(Routes.HOME) {
             HomeScreen(navController, carritoViewModel)
@@ -67,10 +60,6 @@ fun NavGraph(
             RegisterScreen(navController, registerViewModel)
         }
 
-        composable(Routes.ENTRADAS) {
-            EntradasScreen(navController, carritoViewModel)
-        }
-
         composable(Routes.PROFILE) {
             val current = user
             if (current != null) {
@@ -80,17 +69,15 @@ fun NavGraph(
                     navController = navController,
                     profileViewModel = profileViewModel
                 )
-            } else {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.PROFILE) { inclusive = true }
-                    }
-                }
             }
         }
 
-        composable("${Routes.DETALLE}/{codigoQR}") { backStackEntry ->
-            val codigoQR = backStackEntry.arguments?.getString("codigoQR") ?: ""
+        composable(Routes.ENTRADAS) {
+            EntradasScreen(navController, carritoViewModel)
+        }
+
+        composable("${Routes.DETALLE}/{codigoQR}") {
+            val codigoQR = it.arguments?.getString("codigoQR") ?: ""
             DetalleEntradaScreen(navController, codigoQR)
         }
 
@@ -99,3 +86,4 @@ fun NavGraph(
         }
     }
 }
+

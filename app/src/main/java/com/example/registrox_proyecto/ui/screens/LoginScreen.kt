@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.registrox_proyecto.data.model.Role
 import com.example.registrox_proyecto.navigation.Routes
 import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
@@ -25,7 +26,6 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
-    // 🔥 Siempre que user cambie → Ir a OTP
     LaunchedEffect(user) {
         if (user != null) {
             navController.navigate(Routes.OTP) {
