@@ -32,7 +32,12 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.example.registrox_proyecto.ui.components.Net.InternetGuard
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import com.example.registrox_proyecto.navigation.Routes
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtpScreen(
     navController: NavHostController,
@@ -52,7 +57,25 @@ fun OtpScreen(
         }
     }
 
-    Scaffold { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Código de verificación") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.OTP) { inclusive = true }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Volver atrás"
+                        )
+                    }
+                }
+            )
+        }
+    ) { padding ->
         InternetGuard {
             Column(
                 modifier = Modifier
