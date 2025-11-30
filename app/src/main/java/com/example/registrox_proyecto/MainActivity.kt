@@ -25,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.registrox_proyecto.data.datastore.AuthDataStore
 import com.example.registrox_proyecto.data.datastore.EntradasDataStore
+import com.example.registrox_proyecto.data.model.Role
 import com.example.registrox_proyecto.data.repository.AuthRepository
 import com.example.registrox_proyecto.navigation.BottomNavItem
 import com.example.registrox_proyecto.navigation.Routes
@@ -195,8 +196,8 @@ fun NavGraph(
     var otpVerified by rememberSaveable { mutableStateOf(false) }
 
     val startDestination = when {
-        !otpVerified -> Routes.OTP
         user == null -> Routes.LOGIN
+        user?.role == Role.TRABAJADOR && !otpVerified -> Routes.OTP
         else -> Routes.HOME
     }
 
@@ -205,12 +206,13 @@ fun NavGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
+
         composable(Routes.OTP) {
             OtpScreen(
                 navController = navController,
                 onOtpVerified = {
                     otpVerified = true
-                    navController.navigate(Routes.LOGIN) {
+                    navController.navigate(Routes.TRABAJADOR) {
                         popUpTo(Routes.OTP) { inclusive = true }
                     }
                 }
@@ -220,15 +222,19 @@ fun NavGraph(
         composable(Routes.LOGIN) {
             LoginScreen(navController = navController, viewModel = loginViewModel)
         }
+
         composable(Routes.HOME) {
             HomeScreen(navController = navController, carritoViewModel = carritoViewModel)
         }
+
         composable(Routes.REGISTER) {
             RegisterScreen(navController = navController, viewModel = registerViewModel)
         }
+
         composable(Routes.ENTRADAS) {
             EntradasScreen(navController = navController, carritoViewModel = carritoViewModel)
         }
+
         composable(Routes.PROFILE) {
             val currentUser = user
             if (currentUser != null) {
@@ -246,18 +252,22 @@ fun NavGraph(
                 }
             }
         }
+
         composable(Routes.TRABAJADOR) {
             HomeTrabajadorScreen(
                 onBackClick = { navController.navigate(Routes.HOME) },
                 carritoViewModel = carritoViewModel
             )
         }
+
         composable("${Routes.DETALLE}/{codigoQR}") { backStackEntry ->
             val codigoQR = backStackEntry.arguments?.getString("codigoQR") ?: ""
             DetalleEntradaScreen(navController = navController, codigoQR = codigoQR)
         }
+
         composable(Routes.COMPRAS) {
             ComprasScreen(navController = navController, viewModel = comprasViewModel)
         }
     }
 }
+
