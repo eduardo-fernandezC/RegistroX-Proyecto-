@@ -25,55 +25,43 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = Routes.LOGIN,
+        startDestination = Routes.LOGIN,     // 🔥 YA NO DEPENDE DE OTP NI ROLES
         modifier = modifier
     ) {
         composable(Routes.LOGIN) {
-            LoginScreen(navController = navController, viewModel = loginViewModel)
+            LoginScreen(navController, loginViewModel)
         }
 
         composable(Routes.OTP) {
-            val currentUser = user
-
-            if (currentUser == null) {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.OTP) { inclusive = true }
-                    }
-                }
-            } else {
-                OtpScreen(
-                    navController = navController,
-                    onOtpVerified = {
-                        if (currentUser.role == Role.TRABAJADOR) {
-                            navController.navigate(Routes.TRABAJADOR) {
-                                popUpTo(Routes.OTP) { inclusive = true }
-                            }
-                        } else {
-                            navController.navigate(Routes.HOME) {
-                                popUpTo(Routes.OTP) { inclusive = true }
-                            }
+            OtpScreen(
+                navController = navController,
+                onOtpVerified = {
+                    val current = user
+                    if (current != null && current.role == Role.TRABAJADOR) {
+                        navController.navigate(Routes.TRABAJADOR) {
+                            popUpTo(Routes.OTP) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.OTP) { inclusive = true }
                         }
                     }
-                )
-            }
-        }
-
-        composable(Routes.HOME) {
-            HomeScreen(
-                navController = navController,
-                carritoViewModel = carritoViewModel
+                }
             )
         }
 
+        composable(Routes.HOME) {
+            HomeScreen(navController, carritoViewModel)
+        }
+
         composable(Routes.TRABAJADOR) {
-            val currentUser = user
-            if (currentUser?.role == Role.TRABAJADOR) {
+            val current = user
+            if (current?.role == Role.TRABAJADOR)
                 HomeTrabajadorScreen(
                     onBackClick = { navController.navigate(Routes.HOME) },
                     carritoViewModel = carritoViewModel
                 )
-            } else {
+            else {
                 LaunchedEffect(Unit) {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.TRABAJADOR) { inclusive = true }
@@ -83,18 +71,18 @@ fun NavGraph(
         }
 
         composable(Routes.REGISTER) {
-            RegisterScreen(navController = navController, viewModel = registerViewModel)
+            RegisterScreen(navController, registerViewModel)
         }
 
         composable(Routes.ENTRADAS) {
-            EntradasScreen(navController = navController, carritoViewModel = carritoViewModel)
+            EntradasScreen(navController, carritoViewModel)
         }
 
         composable(Routes.PROFILE) {
-            val currentUser = user
-            if (currentUser != null) {
+            val current = user
+            if (current != null) {
                 ProfileScreen(
-                    user = currentUser,
+                    user = current,
                     loginViewModel = loginViewModel,
                     navController = navController,
                     profileViewModel = profileViewModel
@@ -110,11 +98,11 @@ fun NavGraph(
 
         composable("${Routes.DETALLE}/{codigoQR}") { backStackEntry ->
             val codigoQR = backStackEntry.arguments?.getString("codigoQR") ?: ""
-            DetalleEntradaScreen(navController = navController, codigoQR = codigoQR)
+            DetalleEntradaScreen(navController, codigoQR)
         }
 
         composable(Routes.COMPRAS) {
-            ComprasScreen(navController = navController, viewModel = comprasViewModel)
+            ComprasScreen(navController, comprasViewModel)
         }
     }
 }

@@ -63,10 +63,10 @@ fun OtpScreen(
                 title = { Text("Código de verificación") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigate(Routes.LOGIN) {
-                            popUpTo(Routes.OTP) { inclusive = true }
-                        }
-                    }) {
+                        navController.popBackStack()
+                    }
+
+                    ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Volver atrás"
