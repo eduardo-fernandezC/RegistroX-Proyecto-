@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.registrox_proyecto.data.model.Role
 import com.example.registrox_proyecto.ui.components.Net.InternetGuard
 import com.example.registrox_proyecto.ui.viewmodel.LoginViewModel
 
@@ -24,10 +25,16 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
-    if (user != null) {
-        LaunchedEffect(user) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
+    LaunchedEffect(user) {
+        if (user != null) {
+            if (user!!.role == Role.TRABAJADOR) {
+                navController.navigate("otp") {
+                    popUpTo("login") { inclusive = true }
+                }
+            } else {
+                navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
+                }
             }
         }
     }
@@ -122,13 +129,14 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text("Iniciar Sesion")
+                            Text("Iniciar Sesión")
                         }
                     }
                 }
 
+                // Registrar
                 TextButton(onClick = { navController.navigate("register") }) {
-                    Text("¿No tienes cuenta? Registrate")
+                    Text("¿No tienes cuenta? Regístrate")
                 }
             }
         }
