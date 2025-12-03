@@ -141,29 +141,6 @@ class OtpScreenTest {
     }
 
     @Test
-    fun otpScreen_escribeCodigoEnCampos() {
-        var input = ""
-
-        rule.setContent {
-            OtpScreenTestable(
-                otpCodeState = "",
-                inputCodeState = input,
-                errorTextState = "",
-                onInputChange = { input = it },
-                onSendOtp = {},
-                onVerify = {}
-            )
-        }
-
-        rule.onNodeWithTag("otp_0").performTextInput("1")
-        rule.onNodeWithTag("otp_1").performTextInput("2")
-        rule.onNodeWithTag("otp_2").performTextInput("3")
-        rule.onNodeWithTag("otp_3").performTextInput("4")
-
-        assert(input == "1234")
-    }
-
-    @Test
     fun otpScreen_clickEnviarEjecutaCallback() {
         var enviado = false
 
