@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
@@ -150,55 +151,68 @@ fun OtpScreen(
 @Composable
 fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
 
-    val focusRequester = remember { FocusRequester() }
+    val focusRequesters = List(4) { FocusRequester() }
 
-    BasicTextField(
-        value = code,
-        onValueChange = { value ->
-            if (value.length <= 4 && value.all { it.isDigit() }) {
-                onCodeChange(value)
-            }
-        },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier
-            .focusRequester(focusRequester)
-            .size(1.dp)
-            .focusable(),
-        decorationBox = {}
-    )
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        for (index in 0 until 4) {
 
-    val chars = List(4) { i -> code.getOrNull(i)?.toString() ?: "" }
+            val char = if (index < code.length) code[index].toString() else ""
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .clickable { focusRequester.requestFocus() }
-    ) {
+            BasicTextField(
+                value = char,
+                onValueChange = { value ->
 
-        chars.forEach { digit ->
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-                tonalElevation = 4.dp,
+                    if (value.isNotEmpty() && value.last().isDigit()) {
+                        if (code.length < 4) {
+                            onCodeChange(code + value.last())
+                        }
+                        if (index < 3) focusRequesters[index + 1].requestFocus()
+                    } else if (value.isEmpty()) {
+                        if (code.isNotEmpty() && index < code.length) {
+                            onCodeChange(code.dropLast(1))
+                        }
+                        if (index > 0) focusRequesters[index - 1].requestFocus()
+                    }
+                },
                 modifier = Modifier
                     .width(56.dp)
                     .height(56.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = digit,
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    .focusRequester(focusRequesters[index])
+                    .focusable(),
+
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center
+                ),
+
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+
+                decorationBox = { innerTF ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                        tonalElevation = 4.dp
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            innerTF()
+                        }
+                    }
                 }
-            }
+            )
         }
     }
 
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        focusRequesters[0].requestFocus()
     }
 }
+
 
 
 fun generateOtp(): String = (1000..9999).random().toString()
