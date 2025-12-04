@@ -93,7 +93,6 @@ fun OtpScreen(
                 Text("Digite el código enviado", fontSize = 14.sp)
                 Spacer(Modifier.height(32.dp))
 
-                // OTP input que permite escribir de corrido
                 OtpInputField(code = inputCode) { newValue ->
                     if (newValue.length <= 4) inputCode = newValue
                 }
@@ -151,65 +150,67 @@ fun OtpScreen(
 @Composable
 fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
 
-    val focusRequesters = List(4) { FocusRequester() }
+    val focusRequester = remember { FocusRequester() }
 
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        for (index in 0 until 4) {
+    TextField(
+        value = code,
+        onValueChange = { value ->
+            if (value.length <= 4 && value.all { it.isDigit() }) {
+                onCodeChange(value)
+            }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
 
-            val char = if (index < code.length) code[index].toString() else ""
+        modifier = Modifier
+            .focusRequester(focusRequester)
+            .fillMaxWidth()
+            .height(1.dp)
+            .padding(0.dp)
+            .offset(y = 1.dp),
 
-            BasicTextField(
-                value = char,
-                onValueChange = { value ->
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+            focusedContainerColor = MaterialTheme.colorScheme.background,
+            unfocusedTextColor = MaterialTheme.colorScheme.background,
+            focusedTextColor = MaterialTheme.colorScheme.background,
+            disabledTextColor = MaterialTheme.colorScheme.background,
+            cursorColor = MaterialTheme.colorScheme.background,
+            focusedIndicatorColor = MaterialTheme.colorScheme.background,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.background,
+        ),
 
-                    if (value.isNotEmpty() && value.last().isDigit()) {
-                        if (code.length < 4) {
-                            onCodeChange(code + value.last())
-                        }
-                        if (index < 3) focusRequesters[index + 1].requestFocus()
-                    } else if (value.isEmpty()) {
-                        if (code.isNotEmpty() && index < code.length) {
-                            onCodeChange(code.dropLast(1))
-                        }
-                        if (index > 0) focusRequesters[index - 1].requestFocus()
-                    }
-                },
+        singleLine = true
+    )
+
+    val chars = List(4) { i -> code.getOrNull(i)?.toString() ?: "" }
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.clickable {
+            focusRequester.requestFocus()
+        }
+    ) {
+        chars.forEach { digit ->
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                 modifier = Modifier
                     .width(56.dp)
                     .height(56.dp)
-                    .focusRequester(focusRequesters[index])
-                    .focusable(),
-
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-
-                textStyle = LocalTextStyle.current.copy(
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center
-                ),
-
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-
-                decorationBox = { innerTF ->
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-                        tonalElevation = 4.dp
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            innerTF()
-                        }
-                    }
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = digit,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center
+                    )
                 }
-            )
+            }
         }
     }
 
     LaunchedEffect(Unit) {
-        focusRequesters[0].requestFocus()
+        focusRequester.requestFocus()
     }
 }
 
