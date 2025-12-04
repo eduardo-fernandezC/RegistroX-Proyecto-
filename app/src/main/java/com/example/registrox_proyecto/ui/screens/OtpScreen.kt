@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -91,6 +92,7 @@ fun OtpScreen(
                 Text("Digite el código enviado", fontSize = 14.sp)
                 Spacer(Modifier.height(32.dp))
 
+                // OTP input que permite escribir de corrido
                 OtpInputField(code = inputCode) { newValue ->
                     if (newValue.length <= 4) inputCode = newValue
                 }
@@ -132,8 +134,7 @@ fun OtpScreen(
                             errorText = "Código incorrecto"
                         }
                     }
-                )
-                {
+                ) {
                     Text("VERIFICAR")
                 }
 
@@ -148,66 +149,57 @@ fun OtpScreen(
 
 @Composable
 fun OtpInputField(code: String, onCodeChange: (String) -> Unit) {
-    val focusRequesters = List(4) { FocusRequester() }
-    val chars = List(4) { index -> code.getOrNull(index)?.toString() ?: "" }
 
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        repeat(4) { index ->
-            BasicTextField(
-                value = chars[index],
-                onValueChange = { value ->
-                    if (value.length <= 1 && value.all { it.isDigit() }) {
-                        val newCode = buildString {
-                            for (i in 0..3) {
-                                append(
-                                    when {
-                                        i == index -> value
-                                        code.length > i -> code[i]
-                                        else -> ""
-                                    }
-                                )
-                            }
-                        }
-                        onCodeChange(newCode)
-                        if (value.isNotEmpty() && index < 3) {
-                            focusRequesters[index + 1].requestFocus()
-                        }
-                    }
-                },
+    val focusRequester = remember { FocusRequester() }
+
+    BasicTextField(
+        value = code,
+        onValueChange = { value ->
+            if (value.length <= 4 && value.all { it.isDigit() }) {
+                onCodeChange(value)
+            }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = Modifier
+            .focusRequester(focusRequester)
+            .size(1.dp)
+            .focusable(),
+        decorationBox = {}
+    )
+
+    val chars = List(4) { i -> code.getOrNull(i)?.toString() ?: "" }
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .clickable { focusRequester.requestFocus() }
+    ) {
+
+        chars.forEach { digit ->
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                tonalElevation = 4.dp,
                 modifier = Modifier
                     .width(56.dp)
                     .height(56.dp)
-                    .focusRequester(focusRequesters[index])
-                    .focusable(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                textStyle = LocalTextStyle.current.copy(
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center
-                ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                decorationBox = { innerTF ->
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-                        tonalElevation = 4.dp
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            innerTF()
-                        }
-                    }
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = digit,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center
+                    )
                 }
-            )
+            }
         }
     }
 
     LaunchedEffect(Unit) {
-        focusRequesters[0].requestFocus()
+        focusRequester.requestFocus()
     }
 }
+
 
 fun generateOtp(): String = (1000..9999).random().toString()
 
