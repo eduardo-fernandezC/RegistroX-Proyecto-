@@ -114,9 +114,6 @@ fun BasicTextFieldTestable(
     )
 }
 
-// ----------------------------
-// 🔹 TESTS
-// ----------------------------
 class OtpScreenTest {
 
     @get:Rule
