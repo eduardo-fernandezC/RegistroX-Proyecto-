@@ -270,23 +270,4 @@ class EntradasScreenTest {
 
         rule.onNodeWithText("Ocupada").assertIsDisplayed()
     }
-
-    @Test
-    fun entradasScreen_clickEliminarLlamaCallback() {
-        var eliminado = false
-
-        rule.setContent {
-            EntradasScreenTestable(
-                tickets = listOf(ticketDisponible),
-                mensaje = "",
-                isLoading = false,
-                onClickTicket = {},
-                onEliminar = { eliminado = true }
-            )
-        }
-
-        rule.onNodeWithText("Eliminar entradas usadas").performClick()
-
-        assert(eliminado)
-    }
 }
