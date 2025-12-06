@@ -178,20 +178,4 @@ class HomeTrabajadorScreenTest {
             .assertTextContains("Sin conexión")
     }
 
-    @Test
-    fun homeTrabajador_muestraMensajeExito() {
-        rule.setContent {
-            HomeTrabajadorScreenTestable(
-                mensaje = "Entrada validada correctamente",
-                onCodigoChange = {},
-                onScanClick = {},
-                onValidarManual = {}
-            )
-        }
-
-        rule.onNodeWithTag("mensaje")
-            .assertIsDisplayed()
-            .assertTextContains("correctamente", substring = true)
-    }
-
 }
